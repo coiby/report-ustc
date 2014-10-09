@@ -1,0 +1,13 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+$config['useragent']        = 'report.ustc.edu.cn';        
+$config['protocol']         = 'smtp';        
+$config['smtp_host']        = 'mail.ustc.edu.cn';
+$config['smtp_user']        = '';
+$config['smtp_pass']        = '';
+$config['smtp_port']        = 465;
+$config['smtp_timeout']     = 5;
+$config['smtp_crypto']		='ssl';
+$config['mailtype']         = 'html';
+$config['charset']          = 'utf-8';
+$config['bcc_batch_mode']   = TRUE;
+$config['bcc_batch_size']   = 200;
