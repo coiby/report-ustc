@@ -3,6 +3,52 @@
 <script>
 $(function() {  
     $('.error').hide();  
+
+    $("#getmsgcode").click(
+			function(event) {
+				$("#control-valmobile").show();
+				
+				var datastring="mobile="+$("input#mobile").val();
+				$.ajax({
+					type : "POST",
+					url : "/api/user/mobilecode",
+					data : datastring,
+					dataType: "json",
+					success : function(data) {
+						//alert(result);
+						if(data.status=="success"){
+							 
+							// waiting time
+						    var resendtime = 60;
+						    $("#getmsgcode").prop('disabled',true);
+						    
+						    var timer = setInterval(function(){
+						        // If the timer is up, enable button again
+						        if(resendtime <= 0){
+						            clearInterval(timer);
+						            $("#getmsgcode").text("发送验证码");
+						            $("#getmsgcode").prop('disabled',false);
+						        }
+						        // Otherwise the timer should tick and display the results
+						        else{
+						            // Decrement the waiting time
+						        	resendtime--;
+						            $("#getmsgcode").text(resendtime+"秒后重新发送");      
+						        }
+						    },1000);
+							 return false;
+							 
+						}else if(data.status=="error"){
+			           	 	alert(data.message);
+			           	 	return false;
+			           	 } 
+						 
+					}
+				});
+				
+				return false;
+			});
+    
     $('#formreg').validate({
 		rules : {
 			email : {
@@ -38,6 +84,19 @@ $(function() {
 			}
 		}
 	});
+    
+    $("input#mobile").keyup(
+    		function() {
+    			var mobile = $("input#mobile").val();
+				var reg = /^1\d{10}$/;
+				if (reg.test(mobile)) {
+					$("#getmsgcode").show();
+					return false;
+				}
+        		}
+    	    );
+
+   
 	
     $("#subscribe").click(
 			function() {
@@ -139,7 +198,11 @@ $(function() {
 									<label class="control-label" for="mobile">手机号</label>
 									<div class="controls">
 										<input type="text" id="mobile" name="mobile" placeholder=""
-											class="input-xlarge">
+											class="input-xlarge"><button style="display: none" id="getmsgcode">获取验证码</button>
+									</div>
+									<div class="controls" id="control-valmobile" style="display: none" >
+										<input type="text" id="mobile_val" name="mobile_val" placeholder="验证码"
+											class="input-xlarge"> 
 									</div>
 								</div>
 

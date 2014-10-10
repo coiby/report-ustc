@@ -23,7 +23,7 @@ class User extends CI_Controller {
 		$mobile=$_POST['mobile'];
 		$pw1=$_POST['password'];
 		$pw2=$_POST['password2'];
-		
+		$mobile_val=$_POST['mobile_val'];
 		$error=false;
 		$errormsg="";
 		if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
@@ -41,6 +41,14 @@ class User extends CI_Controller {
 		if(!preg_match('/^\d{11}$/',$mobile)){
 			$error=true;
 			$errormsg=$errormsg."手机号有误\n";
+		}
+		
+		if(!preg_match('/^\d{6}$/',$mobile_val)||$mobile_val!=$this->session->userdata('mobile_val')||$mobile!=$this->session->userdata('mobile')){
+			$error=true;
+			$errormsg=$errormsg."验证码有误\n";
+		}else{
+			$sessiondata=array('mobile_val','mobile');
+			$this->session->unset_userdata($sessiondata);
 		}
 		
 		if($error){
@@ -194,6 +202,46 @@ class User extends CI_Controller {
 			echo json_encode(array('status' => 'success','message'=>"退订成功！"));
 		}else{
 			echo json_encode(array('status' => 'error','message'=>"退订失败！"));
+		}
+	}
+	/**
+	 * send validation code for mobile phone
+	 * @todo safety 限制验证码发送间隔
+	 * @return boolean
+	 */
+	function mobilecode(){
+		$mobile=$_POST['mobile'];
+		$errormsg="";
+		$error=false;
+		if(!preg_match('/^\d{11}$/',$mobile)){
+			$errormsg=$errormsg."手机号有误\n";
+			echo json_encode(array('status' => 'error','message'=>$errormsg));
+			return false;
+		}
+		  
+		$this->load->helper('string');
+		$vali_code=random_string('numeric',6);
+		$sessiondata=array('mobile_val'=>$vali_code,'mobile'=>$mobile);
+		$this->session->set_userdata($sessiondata);
+		
+		$messageContent="手机验证码为".$vali_code."  科大学术报告平台";
+		//send validation code to the phone	
+		$this->load->helper('msg');
+		$client=getWSDLClient();
+		try {
+			$result=$client->wsSendSms($messageContent,$mobile);
+		}catch (SoapFault $fault) {
+			$error=true;
+			$errormsg.=$fault->faultcode;
+		}
+		/* if(!isset($result['messageId'])){
+			$error=true;
+			$errormsg.= serialize($result);//$result['soap_fault'];
+		} */
+		if($error){
+			echo json_encode(array('status' => 'error','message'=>$errormsg));
+		}else{
+			echo json_encode(array('status' => 'success'));
 		}
 	}
 }
