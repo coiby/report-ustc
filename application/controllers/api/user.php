@@ -5,6 +5,7 @@ class User extends CI_Controller {
 	 
 	function __construct() {
 		parent::__construct();
+		$this->load->model('user_model');
 	}
 	
 	function index() {
@@ -54,7 +55,7 @@ class User extends CI_Controller {
 		if($error){
 			echo json_encode(array('status' => 'error','message'=>$errormsg));
 		}else{
-			$this->load->model('user_model');
+			
 			if($this->user_model->createUser(array('email'=>$email,'mobile'=>$mobile,'pass'=>$pw1))){
 				$id = $this->db->insert_id();
 				echo json_encode(array('status' => 'success','id'=>$id,'message'=>"注册成功！"));
@@ -238,6 +239,63 @@ class User extends CI_Controller {
 			$error=true;
 			$errormsg.= serialize($result);//$result['soap_fault'];
 		} */
+		if($error){
+			echo json_encode(array('status' => 'error','message'=>$errormsg));
+		}else{
+			echo json_encode(array('status' => 'success'));
+		}
+	}
+	
+	function reset_pw(){
+		$error=false;
+		$errormsg="";
+		$email=$this->session->userdata('resetemail');
+		if($email){
+			$pw1=$_POST['password'];
+			$pw2=$_POST['password2'];
+				
+				
+			if($pw1!==$pw2){
+				$error=true;
+				$errormsg=$errormsg."两次密码不匹配\n";
+			}else{
+				$pw1=md5($pw1);
+			}
+			if( $this->user_model->change_password($email,$pw1)){
+				$this->user_model->clear_reset_password_code($email);
+				$this->session->unset_userdata('resetemail');
+			}else{
+				$error=true;
+				$errormsg=$errormsg."更新密码失败\n";
+			}
+		}
+		
+		if($error){
+			echo json_encode(array('status' => 'error','message'=>$errormsg));
+		}else{
+			echo json_encode(array('status' => 'success'));
+		}
+		
+	}
+	
+	function reset_pw_code(){
+		$email=$_POST['email'];
+		$errormsg="";
+		$error=false;
+		
+		if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+			$errormsg="邮箱格式错误\n";
+			echo json_encode(array('status' => 'error','message'=>$errormsg));
+			return false;
+		}
+	
+		 //check if user exist
+		if($this->user_model->user_exist($email)){
+			$this->user_model->reset_pw_code($email);
+		}else{
+			$error=true;
+			$errormsg="该用户不存在\n";
+		}
 		if($error){
 			echo json_encode(array('status' => 'error','message'=>$errormsg));
 		}else{

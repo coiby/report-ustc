@@ -47,12 +47,13 @@ class User_model extends CI_Model
 		return $this->db->insert('user_login', $data);
 	}
 	
-	/*
+	/**
 	 * create user
 	 */
 	function createUser($data){
 		return $this->db->insert($this->table_name, $data);
 	}
+	
 	/**
 	 * get user by uid 
 	 * 
@@ -82,6 +83,11 @@ class User_model extends CI_Model
 		$rst = $this->db->select('id,email,mobile')->where(array('email'=>$email,'pass'=>$pw))->get($this->table_name);
 		return $rst->row_array();
 	}
+	
+	function user_exist($email){
+		return $this->db->select('id,email')->where(array('email'=>$email))->count_all_results($this->table_name)>0;
+	}
+	
 	/**
 	 * get user's subscription via uid
 	 * @param int uid
@@ -108,5 +114,66 @@ class User_model extends CI_Model
 			$subs[]=$sub;
 		}
 		return $subs;
+	}
+	
+	function change_password($email,$pw){
+		$data = array(
+               'pass' => $pw
+            );
+
+		$this->db->where('email', $email);
+		return $this->db->update($this->table_name, $data); 
+	}
+	
+	public function clear_reset_password_code($email) {
+	
+		if (empty($email))
+		{
+			return FALSE;
+		}
+	
+		$this->db->where(array('email'=>$email));
+	
+		 
+		$data = array(
+					'forgotten_password_code' => NULL,
+					'forgotten_password_time' => NULL
+			);
+	
+		$this->db->update($this->table_name, $data);
+	
+		return false;
+	}
+	
+	function reset_pw_code($email){
+		$this->load->helper('string');
+		$resetpwcode=random_string('sha1',10);
+		$resetpwtime=time();
+		$data=array('forgotten_password_code'=>$resetpwcode,'forgotten_password_time'=>$resetpwtime);
+		
+		if($this->db->update($this->table_name,$data,array('email'=>$email))){
+			$this->load->library ( 'email' );
+			$this->email->from ( "coiby@mail.ustc.edu.cn" );
+			$this->email->bcc ( $email );
+			$this->email->subject ( "密码重置" );
+			$this->email->message ("请点击下面的链接（一小时内有效）重置您的密码 \n".config_item('base_url')."user/reset_pw?code=".$resetpwcode."&email=".$email );
+			$this->email->send ();
+			 
+		}
+	}
+	function reset_pw_check($email,$code){
+		 
+		$rst=$this->db->select('forgotten_password_time')->where(array('email'=>$email,'forgotten_password_code'=>$code))->get($this->table_name);
+		
+		if ($rst->num_rows()>0)
+		{
+			$codetime=$rst->row_array()['forgotten_password_time'];
+			if (time() - $codetime <= 3600) {
+				//it has expired	  
+				return true;
+			} 
+		}
+		return false;
+		 
 	}
 }

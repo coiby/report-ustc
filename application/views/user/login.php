@@ -112,9 +112,15 @@ $(function() {
 				<!-- Button -->
 				<div class="controls">
 					<button class="btn btn-success">登录</button>
+					<div style="float:right;">
+					<span ><a href="/user/reset_pw_code">忘记密码</a></span>
+					<span class="separator">·</span>
 					<a href="/user/register">没有注册？</a>
+					</div>
 				</div>
+				 
 			</div>
+			
 
 		</form>
 	</div>

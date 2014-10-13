@@ -5,6 +5,7 @@ class User extends Common {
 
 	function __construct() {
 		parent::__construct();
+		$this->load->model('user_model');
 	}
 	
 	function index() {
@@ -14,7 +15,7 @@ class User extends Common {
 		$data['header'] = $this->html_header("用户信息");
 		$data['footer'] = $this->html_footer();
 	 
-		$this->load->model('user_model');
+		
 		$data['user']=$this->user_model->getUserByEmail($this->session->userdata('user'));
 		 
 		$template = $this->site_template . 'user/index';
@@ -56,6 +57,30 @@ class User extends Common {
 		$data['user']=$this->user_model->getUserByEmail($this->session->userdata('user'));
 		$data['subs'] = $this->user_model->getSubs($this->session->userdata('id'));
 		$template = $this->site_template . 'user/subscribe';
+		$this->load->view($template, $data);
+	}
+	function reset_pw_code(){
+		$data['header'] = $this->html_header("发送重设密码验证码");
+		$data['footer'] = $this->html_footer();
+		$template = $this->site_template . 'user/reset_pw_code';
+		$this->load->view($template, $data);
+	}
+	
+	function reset_pw(){
+		$code=$this->input->get('code', TRUE);
+		$email=$this->input->get('email', TRUE);
+		
+		$data['header'] = $this->html_header("重设密码");
+		$data['footer'] = $this->html_footer();
+		
+		 if($this->user_model->reset_pw_check($email,$code)){
+			$data['valid'] =true;
+			$this->session->set_userdata('resetemail',$email);
+		}else{
+			$data['valid'] =false;
+		}
+		$template = $this->site_template . 'user/reset_pw';
+		
 		$this->load->view($template, $data);
 	}
 	
