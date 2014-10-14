@@ -167,9 +167,10 @@ class User_model extends CI_Model
 		
 		if ($rst->num_rows()>0)
 		{
-			$codetime=$rst->row_array()['forgotten_password_time'];
+			$profile=$rst->row_array();
+			$codetime = $profile['forgotten_password_time'];
 			if (time() - $codetime <= 3600) {
-				//it has expired	  
+				//it hasn't expired	  
 				return true;
 			} 
 		}
