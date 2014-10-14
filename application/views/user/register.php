@@ -85,12 +85,17 @@ $(function() {
 		}
 	});
     
-    $("input#mobile").keyup(
+    $("input#mobile").bind("input",
     		function() {
     			var mobile = $("input#mobile").val();
 				var reg = /^1\d{10}$/;
+				var getmsgcode=$("#getmsgcode");
 				if (reg.test(mobile)) {
-					$("#getmsgcode").show();
+					getmsgcode.show();
+					getmsgcode.prop('disabled',false);
+					return false;
+				}else{
+					getmsgcode.prop('disabled',true);
 					return false;
 				}
         		}
