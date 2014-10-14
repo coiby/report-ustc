@@ -133,8 +133,15 @@ $(function() {
 					return false;
 				}
 
+				var mobile_val = $("input#mobile_val").val();
+				reg = /\d{6}$/;
+				if (!reg.test(mobile_val)) {
+					$("input#mobile_val").focus();
+					return false;
+				}
+				
 				var dataString = 'action=register&email=' + email
-						+ '&mobile=' + mobile + '&password=' + pw
+						+ '&mobile=' + mobile +  '&mobile_val=' + mobile_val + '&password=' + pw
 						+ '&password2=' + pw2;
 				//alert (dataString);return false;  
 				$.ajax({

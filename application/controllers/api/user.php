@@ -46,7 +46,7 @@ class User extends CI_Controller {
 		
 		if(!preg_match('/^\d{6}$/',$mobile_val)||$mobile_val!=$this->session->userdata('mobile_val')||$mobile!=$this->session->userdata('mobile')){
 			$error=true;
-			$errormsg=$errormsg."验证码有误\n";
+			$errormsg=$errormsg."验证码有误\n".$mobile_val." ".$this->session->userdata('mobile_val').$this->session->userdata('mobile');
 		}else{
 			$sessiondata=array('mobile_val','mobile');
 			$this->session->unset_userdata($sessiondata);
@@ -75,16 +75,8 @@ class User extends CI_Controller {
 	function login(){
 		$email=$_POST['email'];
 		$pw=md5($_POST['pass']);
-		
-		$where=" where email='".$email."' and pass='".$pw."'";
-		$query="select id from user".$where;
-		
-		$res = $this->db->query($query);
 		 
-		if($res->num_rows() > 0){
-			$row = $res->row_array();
-			$sessiondata=array('user'=>$email,'id'=>$row['id']);
-			$this->session->set_userdata($sessiondata);
+		if($this->user_model->checkUser($email,$pw) ){
 		
 			echo "OK";
 		}else{

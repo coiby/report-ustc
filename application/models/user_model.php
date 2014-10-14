@@ -7,6 +7,7 @@ class User_model extends CI_Model
 	function __construct()
 	{
 		parent::__construct();
+		$this->load->library('bcrypt');
 	}
 
 	 
@@ -51,6 +52,7 @@ class User_model extends CI_Model
 	 * create user
 	 */
 	function createUser($data){
+		$data['pass']=$this->bcrypt->hash($data['pass']);
 		return $this->db->insert($this->table_name, $data);
 	}
 	
@@ -80,9 +82,24 @@ class User_model extends CI_Model
 	 * @param string email
 	 */
 	function checkUser($email,$pw){
-		$rst = $this->db->select('id,email,mobile')->where(array('email'=>$email,'pass'=>$pw))->get($this->table_name);
-		return $rst->row_array();
+		if (empty ( $email ) || empty ( $pw )) {
+			return false;
+		}
+		$query = $this->db->select ( 'id,pass' )->where ( array (
+				'email' => $email 
+		) )->get ( $this->table_name );
+		if ($query->num_rows () === 1) {
+			$user = $query->row ();
+			if ($this->bcrypt->verify ( $pw, $user->pass )){
+				$sessiondata=array('user'=>$email,'id'=>$user->id);
+				$this->session->set_userdata($sessiondata);
+				return true;
+			}
+		}
+		return false;
 	}
+	
+	
 	
 	function user_exist($email){
 		return $this->db->select('id,email')->where(array('email'=>$email))->count_all_results($this->table_name)>0;
