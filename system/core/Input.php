@@ -348,7 +348,11 @@ class CI_Input {
 		}
 		else
 		{
-			$this->ip_address = $_SERVER['REMOTE_ADDR'];
+			//https://ellislab.com/forums/viewthread/227672/
+			 if (isset ( $_SERVER ['REMOTE_ADDR'] ))
+				$this->ip_address = $_SERVER ['REMOTE_ADDR'];
+			else
+				$this->ip_address = '0.0.0.0';  
 		}
 
 		if ( ! $this->valid_ip($this->ip_address))
