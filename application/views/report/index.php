@@ -7,6 +7,7 @@
 	padding: 10px;
 	height: 430px;
 	margin-top: 20px;
+	margin-left: 60px;
 	cursor: pointer;
 	-webkit-transition: width 2s; /* For Safari 3.1 to 6.0 */
 	transition: background-color 2s;
