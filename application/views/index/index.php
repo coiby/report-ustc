@@ -4,6 +4,10 @@
 select {
 	margin-bottom: 0px;
 }
+
+.ui-dialog {
+	z-index: 9000 !important;
+}
 </style>
 <script>
 $(function() {  
@@ -24,14 +28,14 @@ $(function() {
             $('#viewrep').html('');
         }
     });
-  
+ 
     $('body').on("click",'.viewd',function(){//TODO the event binding is invalid... http://zhidao.baidu.com/link?url=AEli88NfFn4jPGpL0fwm0enJxZTZo5a_cNvRi-j_Dn_58P3LZY70HFQTt5C12NtG7Hbo-J3eBbaInJ1hIbgfU_
 		//TODO https://stackoverflow.com/questions/10371677/how-to-attach-jquery-event-handlers-for-newly-injected-html
 		var id=this.value;
 		var dataString = 'action=view-rep&id='+id;
 		$('#viewrep').empty();
 		$.ajax({
-			url:"ajax.php",
+			url:"/api/report/view",
 			data:dataString,
 			dataType:'html',
 			type:'post',
