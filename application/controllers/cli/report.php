@@ -2,7 +2,6 @@
 class Report extends CI_Controller {
 	public function __construct() {
 		parent::__construct ();
-		$this->load->library ( 'input' );
 		$this->load->library ( 'email' );
 		$this->load->library('simple_html_dom');//http://nithin2889.blogspot.jp/2013/02/php-web-page-scraping-in-codeigniter.html
 		$this->load->model('subscribe_model');
@@ -22,13 +21,13 @@ class Report extends CI_Controller {
 	}
 	
 	protected  function get_micro(){
-		//每天检查当天的报告
-		$timemk=mktime(0,0,0,date("m"),date("d")+3,date("Y"));
+		//only fetch newest reports
+		//$timemk=mktime(0,0,0,date("m"),date("d")-5,date("Y"));
 		//$date = date ( "DMj",$timemk );
-		$date = date ( "Y-m-d",$timemk);
+		//$date = date ( "Y-m-d",$timemk);
 		
 		$url = "http://www.hfnl.ustc.edu.cn/hfnlnews/xsbg/";
-		
+		$cid=2;
 		//$content = file_get_html($url);
 		//$res=iconv ( 'gbk', 'UTF-8',$content);
 		
@@ -40,51 +39,52 @@ class Report extends CI_Controller {
 		$lis = $html->find ( "ul.text_list li" );
 		
 		$rep_struct=array("cid","bbslink","state","title","speaker","institution","starttime","place","organizer","content","profile","school");
+		//get the latest report's title
+		$latestrep=$this->report_model->latest($cid);
+		if(isset($latestrep['title']))
+			$latest_title=preg_replace('/\s+/','',$latestrep['title']);
+		else 
+			$latest_title="";
 		
+		$data=array();
+		$data['cid']=$cid;
+		$data['state']=1;
+		$data['school']=2;
 		foreach ( $lis as $li ) {
-		
+			
 			$a = $li->find ( "a", 0 );
-			$text=$a->innertext;
-			$pdate = preg_replace('/\s+/','',$text); // post date
+			$text = iconv ( 'gbk', 'UTF-8', $a->title );
+			$ptext = preg_replace ( '/\s+/', '', $text ); // post date
 			 
-			if (stripos ( $pdate, $date ) !== false) {
-
-				//echo html_entity_decode($text)."\n";
-				$href = $prefix . htmlspecialchars_decode ( $a->href );
-				//echo $href."\n";
-				//$rep =file_get_html($href);
-				//$res2=iconv ( 'gbk', 'UTF-8',$rep);
-				$html2 = file_get_html($href);
-				$tab=$html2->find ( "table.hei",0);
-				$tds = $tab->find ( "td[align=left]");
-				//var_dump($tab->plaintext);
-				$data=array();
-				$data['cid']=2;
-				$data['bbslink']=$href;
-				$data['state']=1;
-				$i=0;
-				foreach ( $tds as $td ) {
-					$i++;
-					if($i!=4){
-						$data[$rep_struct[$i+2]]=html_entity_decode(iconv ( 'gbk', 'UTF-8',str_replace("&nbsp;","",$td->plaintext)));
-						//html_entity_decode($td->plaintext);
-					}else{
-						$data[$rep_struct[$i+2]]= html_entity_decode(iconv ( 'gbk', 'UTF-8',str_replace('&nbsp;&nbsp;','',str_replace('&nbsp;&nbsp;&nbsp;',' ',$td->plaintext))));
-					}
-				}
-				//print_r($data);
-				$content_profile=$this->parse_rep($data['content']);
-				//print_r($data['content']);
-				echo "\n";
-				//print_r($content_profile);
-				echo "\n";
-				$data['content']=$content_profile[0];
-				$data['profile']=$content_profile[1];
-				$data['school']=2;
-				
-				$this->report_model->add_report($data);
-		
+			if (stripos ( $ptext, $latest_title ) !== false) {
+				return false;
 			}
+			
+			$href = $prefix . htmlspecialchars_decode ( $a->href );
+			
+			$html2 = file_get_html ( $href );
+			$tab = $html2->find ( "table.hei", 0 );
+			$tds = $tab->find ( "td[align=left]" );
+			
+			$data ['bbslink'] = $href;
+			
+			$i = 0;
+			foreach ( $tds as $td ) {
+				$i ++;
+				if ($i != 4) {
+					$data [$rep_struct [$i + 2]] = html_entity_decode ( iconv ( 'gbk', 'UTF-8', str_replace ( "&nbsp;", "", $td->plaintext ) ) );
+					// html_entity_decode($td->plaintext);
+				} else {
+					$data [$rep_struct [$i + 2]] = html_entity_decode ( iconv ( 'gbk', 'UTF-8', str_replace ( '&nbsp;&nbsp;', '', str_replace ( '&nbsp;&nbsp;&nbsp;', ' ', $td->plaintext ) ) ) );
+				}
+			}
+			print_r ( $data );
+			$content_profile = $this->parse_rep ( $data ['content'] );
+			
+			$data ['content'] = $content_profile [0];
+			$data ['profile'] = $content_profile [1];
+			
+			$this->report_model->add($data);
 		}
 	}
 	

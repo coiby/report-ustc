@@ -68,6 +68,13 @@ class Report_model extends CI_Model
  		return $this->db->get()->row_array();
  	}
  
+ 	function latest($cid){
+ 		$this->db->select('*');
+ 		$this->db->where("cid",$cid);
+ 		$this->db->order_by("starttime", "desc");
+ 		$this->db->from($this->table_name);
+ 		return $this->db->get()->row_array();
+ 	}
 
   
 }
