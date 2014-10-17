@@ -8,6 +8,11 @@ select {
 .ui-dialog {
 	z-index: 9000 !important;
 }
+
+.highlight {
+          background-color: #ffff99;
+        }
+
 </style>
 <script>
 $(function() {  
@@ -298,12 +303,16 @@ $(function() {
 		</thead>
 		<tbody>
 		<?php
+		 
+		$date = date ( "y-m-d");
+		 
+		
 foreach ($reports as $report) { 
 ?>
-			<tr id="<?php echo $report['id']?>">
+			<tr id="<?php echo $report['id']?>" <?php if(stripos ( $report['starttime'], $date ) !== false){ ?>   class="highlight" <?php } ?>>
 				<!-- <td class="cktd"><input type="checkbox" class="ckfile" value=""><span>状态</span></td> -->
 
-				<td><span><a href=""><?php echo $report['title']?></a></span></td>
+				<td><span><?php echo $report['title']?></span></td>
 				<td><span><?php echo $report['starttime']?></span></td>
 				<td><span><?php echo $report['place']?></span></td>
 				<td><span><?php echo $report['speaker']?></span></td>
