@@ -37,6 +37,7 @@
 
 <div class="container" style="margin-top: 60px;">
 	<h2>项目初衷</h2>
+	<p>最开始是由于本人比较懒（海报和bbs不经常看），但是又不想错过一些报告，于是写了一个程序自动抓取BBS上的报告发通知到自己的邮箱；而SEG@USTC正好也想做一个学院学术报告的通知推送系统，于是就诞生了这个网站。</p>
 </div>
 <div class="container">
 	<h2>如何帮助项目</h2>
