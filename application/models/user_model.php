@@ -173,7 +173,8 @@ class User_model extends CI_Model
 			$this->email->from ( "coiby@mail.ustc.edu.cn" );
 			$this->email->bcc ( $email );
 			$this->email->subject ( "密码重置" );
-			$this->email->message ("请点击下面的链接（一小时内有效）重置您的密码 \n".config_item('base_url')."user/reset_pw?code=".$resetpwcode."&email=".$email );
+			$link=config_item('base_url')."user/reset_pw?code=".$resetpwcode."&email=".$email;
+			$this->email->message ("请点击下面的链接（一小时内有效）重置您的密码 \n"."<a href='".$link."'>".$link."</a>" );
 			$this->email->send ();
 			 
 		}
