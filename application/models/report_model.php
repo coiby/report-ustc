@@ -16,6 +16,7 @@ class Report_model extends CI_Model
 	function get_report_list($limit, $offset=0,$thisweek,$state, $condition=""){
 		$this->db->select("id,cid,speaker,title,content,place,institution,profile ,length,state,bbslink");
 		$this->db->select("DATE_FORMAT(starttime,'%y-%m-%d %H:%i') AS starttime",FALSE);
+		$this->db->order_by('starttime','desc');
 		$this->db->from($this->table_name);
 		if($condition!='')
 			$this->db->where($condition);
