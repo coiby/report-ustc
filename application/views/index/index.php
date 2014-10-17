@@ -270,7 +270,7 @@ $(function() {
 
 			<p>
 				本系统将学校的学术报告以邮件或短信形式自动通知您，评论报告请点击相应的BBS链接。目前处于测试期，有建议或bug请反馈至<a
-					href="https://github.com/Coiby/report-ustc">Github</a>或<a href="http://bbs.ustc.edu.cn/cgi/bbscon?bn=ESS&fn=M544105EB&num=8001" target="_blank">BBS地空学院版</a>。
+					href="https://github.com/Coiby/report-ustc" target="_blank">Github</a>或<a href="http://bbs.ustc.edu.cn/cgi/bbscon?bn=ESS&fn=M544105EB&num=8001" target="_blank">BBS地空学院版</a>。
 			</p>
 		</div>
 
