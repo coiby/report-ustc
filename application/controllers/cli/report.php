@@ -78,12 +78,12 @@ class Report extends CI_Controller {
 					$data [$rep_struct [$i + 2]] = html_entity_decode ( iconv ( 'gbk', 'UTF-8', str_replace ( '&nbsp;&nbsp;', '', str_replace ( '&nbsp;&nbsp;&nbsp;', ' ', $td->plaintext ) ) ) );
 				}
 			}
-			print_r ( $data );
+			
 			$content_profile = $this->parse_rep ( $data ['content'] );
 			
-			$data ['content'] = $content_profile [0];
-			$data ['profile'] = $content_profile [1];
-			
+			$data ['content'] = $content_profile [1];
+			$data ['profile'] = $content_profile [0];
+			print_r ( $data );
 			$this->report_model->add($data);
 		}
 	}
@@ -95,18 +95,27 @@ class Report extends CI_Controller {
 		//example2 http://www.hfnl.ustc.edu.cn/2013/1231/4494.html
 		 
 		if($begin=mb_strpos ( $rep, "告摘要" )){
-			$begin+=7;
+			$begin+=4;
 			
 		}else{
 			$begin=stripos ( $rep, "abstract" ) + 9;
 		}
-		$end=mb_strpos ( $rep, "告人简介" );
-		//echo "line is: ".$end." ".strlen($rep)."\n";
 		$len=strlen($rep);
+		$end=mb_strpos ( $rep, "人简介" );
+		//echo "line is: ".$end." ".strlen($rep)."\n";
+		if($end){
+			$length=$end-$begin;
+			$length2=$len-$end;
+			$content = mb_substr ( $rep,$begin , $length-2,'utf-8' );
+			$profile = mb_substr ( $rep,$end+4 , $length2,'utf-8' );
+		}else{
+			$profile="";
+			$content = mb_substr ( $rep,$begin , $len,'utf-8' );
+		}
+		
 		$length=$end-$begin;
 		$length2=$len-$end;
-		$profile = mb_substr ( $rep,$begin , $length-2,'utf-8' );
-		$content = mb_substr ( $rep,$end+9 , $length2,'utf-8' );
+		
 		//echo $rep."\n";
 		//echo $profile."\n";
 		//echo $content."\n";
