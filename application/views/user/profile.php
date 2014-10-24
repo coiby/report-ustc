@@ -84,7 +84,7 @@ $(function() {
 					data-toggle="dropdown" href="user/index"><?php echo $user['email'];?><b
 						class="caret"></b></a>
 					<ul class="dropdown-menu" role="menu">
-						<li><a href="/user/index">个人信息</a></li>
+						<li><a href="/user/profile">个人信息</a></li>
 						<li><a href="/user/logout">登出</a></li>
 					</ul></li>
 			</ul>

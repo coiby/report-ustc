@@ -12,14 +12,24 @@ class User extends Common {
 		if(!$this->session->userdata('user') ){
 			redirect('user/login');
 		}
+		redirect('user/subscribe');
+		
+	}
+	
+	function profile() {
+		if(!$this->session->userdata('user') ){
+			redirect('user/login');
+		}
+		
 		$data['header'] = $this->html_header("用户信息");
 		$data['footer'] = $this->html_footer();
-	 
+		
 		
 		$data['user']=$this->user_model->getUserByEmail($this->session->userdata('user'));
-		 
-		$template = $this->site_template . 'user/index';
+			
+		$template = $this->site_template . 'user/profile';
 		$this->load->view($template, $data);
+		
 	}
 	
 	function login(){
