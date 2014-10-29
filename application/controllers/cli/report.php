@@ -39,12 +39,11 @@ class Report extends CI_Controller {
 		$lis = $html->find ( "ul.text_list li" );
 		
 		$rep_struct=array("cid","bbslink","state","title","speaker","institution","starttime","place","organizer","content","profile","school");
-		//get the latest report's title
-		$latestrep=$this->report_model->latest($cid);
-		if(isset($latestrep['title']))
-			$latest_title=preg_replace('/\s+/','',$latestrep['title']);
-		else 
-			$latest_title="";
+		//get the latest 5 report's title
+		$latest_titles = array();
+		foreach($this->report_model->latest($cid) as $rep){
+			$latest_titles[] = preg_replace('/\s+/','',$rep['title']);
+		}
 		
 		$data=array();
 		$data['cid']=$cid;
@@ -58,9 +57,15 @@ class Report extends CI_Controller {
 			 
 			//echo $ptext."\n";
 			//echo $latest_title."\n";
-			if (stripos ( $ptext, $latest_title ) !== false) {
-				return false;
+			//if the report is already fetched, exit
+			if(!empty($latest_titles)){
+				foreach($latest_titles as $latest_title){
+					if (stripos ( $ptext, $latest_title ) !== false) {
+						return false;
+					}
+				}
 			}
+			
 			
 			$href = $prefix . htmlspecialchars_decode ( $a->href );
 			

@@ -70,12 +70,13 @@ class Report_model extends CI_Model
  		return $this->db->get()->row_array();
  	}
  
- 	function latest($cid){
- 		$this->db->select('*');
+ 	function latest($cid,$limit=4){
+ 		$this->db->select('title');
+ 		$this->db->limit($limit);
  		$this->db->where("cid",$cid);
- 		$this->db->order_by("id", "desc");
+ 		$this->db->order_by("starttime", "desc");
  		$this->db->from($this->table_name);
- 		return $this->db->get()->row_array();
+ 		return $this->db->get()->result_array();
  	}
 
   
