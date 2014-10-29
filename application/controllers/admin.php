@@ -206,6 +206,9 @@ class Admin extends Common {
 				'profile' => $profile,
 				'place'=>$place
 		);
+		$oldrep=$this->report_model->fetch(array('id'=>$id));
+		if($oldrep['state']==3)
+			$data['state']=2;//get state of report, if state=3(notices are already sent), set the state to 2
 		$where=array('id'=>$id);
 		if ($this->report_model->update( $data, $where )) {
 			$bbsb = ""; // mailbody
