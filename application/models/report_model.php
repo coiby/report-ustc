@@ -59,7 +59,7 @@ class Report_model extends CI_Model
  	}
  	
  	function update($data,$where){
- 		return $this->db->update($this->table_name, $data);
+ 		return $this->db->update($this->table_name, $data,$where);
  	}
  	
 
