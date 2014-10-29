@@ -56,6 +56,8 @@ class Report extends CI_Controller {
 			$text = iconv ( 'gbk', 'UTF-8', $a->title );
 			$ptext = preg_replace ( '/\s+/', '', $text ); // post date
 			 
+			//echo $ptext."\n";
+			//echo $latest_title."\n";
 			if (stripos ( $ptext, $latest_title ) !== false) {
 				return false;
 			}
@@ -83,7 +85,7 @@ class Report extends CI_Controller {
 			
 			$data ['content'] = $content_profile [1];
 			$data ['profile'] = $content_profile [0];
-			print_r ( $data );
+			//print_r ( $data );
 			$this->report_model->add($data);
 		}
 	}
