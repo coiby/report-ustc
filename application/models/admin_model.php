@@ -6,6 +6,7 @@ class Admin_model extends CI_Model
 	function __construct()
 	{
 		parent::__construct();
+		$this->load->library('bcrypt');
 	}
 
 	 
@@ -78,9 +79,13 @@ class Admin_model extends CI_Model
 	 * @param string name
 	 */
 	function checkUser($name,$pw){
-		$query = $this->db->select('id,name,cid')->where(array('name'=>$name,'pass'=>$pw))->get($this->table_name);
-		if ($query->num_rows() > 0) {
-			return $query->row_array();
+		$query = $this->db->select('id,name,cid,pass')->where(array('name'=>$name))->get($this->table_name);
+		if ($query->num_rows() === 1) {
+			$user = $query->row_array();
+			if ($this->bcrypt->verify ( $pw, $user['pass'] )){
+				return $user;
+			}
+			return false;
 		} 
 		return false;
 	}
