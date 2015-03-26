@@ -135,7 +135,7 @@ class User_model extends CI_Model
 	
 	function change_password($email,$pw){
 		$data = array(
-               'pass' => $pw
+               'pass' => $this->bcrypt->hash($pw)
             );
 
 		$this->db->where('email', $email);

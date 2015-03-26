@@ -87,10 +87,10 @@ class Notice extends CI_Controller {
 		$mb = $mb . "<p>地点：" . $report ['place'] . "</p><p></p>";
 		
 		if (! empty ( $report ['profile'] ))
-			$mb = $mb . "<h2>报告人介绍</h2>" . "<p>" . $report ['profile'] . "</p><p></p>";
+			$mb = $mb . "<h2>报告人介绍</h2>" . "<p>" . nl2br($report ['profile']) . "</p><p></p>";
 		
 		if (! empty ( $report ['content'] ))
-			$mb = $mb . "<h2>报告摘要</h2>" . "<p>" . $report ['content'] . "</p>";
+			$mb = $mb . "<h2>报告摘要</h2>" . "<p>" . nl2br($report ['content']) . "</p>";
 			/* $patterns = array (); */
 			// $patterns [0] = "/<p>([\w\W]*?)<\/p>/";
 			// $patterns [1] = "/<h2>([\w\W]*?)<\/h2>/";
