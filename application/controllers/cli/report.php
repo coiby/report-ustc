@@ -49,7 +49,7 @@ class Report extends CI_Controller {
 		}
 		 
 		
-		$board = 'test';
+		$board = 'ess';
 		
 		mb_internal_encoding("UTF-8");
 		
