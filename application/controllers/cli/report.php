@@ -6,6 +6,7 @@ class Report extends CI_Controller {
 		$this->load->library('simple_html_dom');//http://nithin2889.blogspot.jp/2013/02/php-web-page-scraping-in-codeigniter.html
 		$this->load->model('subscribe_model');
 		$this->load->model('report_model');
+		$this->load->library('BBS');
 	}
 	public function index() {
 		if (! $this->input->is_cli_request ()) {
@@ -15,6 +16,168 @@ class Report extends CI_Controller {
 		$this->get_micro();
 		
 	}
+	
+	/**
+	 * case1(two titles): http://ess.ustc.edu.cn/xwxx/xsbg/201411/t20141121_205708.html
+	 * 如果有两条同个人的报告，会忽略
+	 * Requirements: 报告人 单位 报告题目 报告时间 地点  报告人简介; 一个报告只有一个时间（做两个报告？） 单位不能有空格
+	 * 
+	 *  
+	 */
+	public function ess_solid(){
+		if (! $this->input->is_cli_request ()) {
+			echo "This script can only be accessed via the command line" . PHP_EOL;
+			return;
+		}
+		$url = 'http://ess.ustc.edu.cn/xwxx/xsbg/';
+		$cid = 3;
+		
+		$html = file_get_html( $url );
+		
+		$prefix = 'http://ess.ustc.edu.cn/xwxx/xsbg/';
+		$mtext = '固体地球物理学术报告'; // match text
+		
+		$lis = $html->find ( "div.page2 ul li" );
+		
+		$rep_struct=array("cid","bbslink","state","title","speaker","institution","starttime","place","organizer","content","profile","school");
+		//get the latest 5 report's speakers
+		
+		$latest_speakers = array();
+		foreach($this->report_model->latest($cid) as $rep){
+			$latest_speakers[] = preg_replace('/\s+/','',$rep['speaker']);
+			 
+		}
+		 
+		
+		$board = 'test';
+		
+		mb_internal_encoding("UTF-8");
+		
+		foreach ( $lis as $li ) {
+			$data=array();
+			$data['cid']=$cid;
+			$data['state']=1;
+			$data['school']=2;
+			
+			$a = $li->find ( "a", 0 );
+			
+			$text=$a->plaintext;
+			
+			if(stripos ( $text, $mtext ) === false){
+			   continue;
+			}
+			
+			$ptext = preg_replace ( '/\s+/', '', $text ); // post date
+		
+			//echo $ptext."\n";
+			//echo $latest_title."\n";
+			//exit;
+			//if the report is already fetched, exit
+			if(!empty($latest_speakers)){
+				foreach($latest_speakers as $latest_speaker){
+					//echo mb_strlen($latest_speaker).$latest_speaker."a b\n";
+					//echo $ptext."aa\n";
+					//$tpos=mb_strpos ( $ptext, $latest_speaker );
+					 
+					 
+					if (mb_strpos ( $ptext, $latest_speaker ) !== false) {
+						//echo "nonono\n";
+						return false;
+					}
+					//exit;
+				}
+			}
+				
+				
+			$href = $prefix . htmlspecialchars_decode ( $a->href );
+			
+			//$href="http://ess.ustc.edu.cn/xwxx/xsbg/201503/t20150317_212599.html";	
+			$html2 = file_get_html ( $href );
+			$tab = $html2->find ( "table.middlebg", 0 );
+			$contents = $tab->find ( "div.ejcontent td.cc",0 );
+				
+			$data ['bbslink'] = $href;
+				
+			$i = 0;
+
+			
+			
+			$rep = str_replace(array("\n", "\r"), '',html_entity_decode ( $contents->plaintext));
+           
+			$rep = preg_replace('/^[(\xc2\xa0)|\s]+/', '',$rep);
+			$rep = str_replace(' ', '',$rep);
+			$rep = str_replace('单 位', '单位',$rep);
+			 
+			 
+			//continue;
+			$m_texts=array('speaker'=>'报告人','institution'=>'单位','title'=>'报告题目','timestr'=>'报告时间','place'=>'地点','profile'=>'报告人简介','content'=>'报告摘要');
+			
+			
+			$positions=array();
+			$pos_keys=array();
+			
+			$i=0;
+			
+			foreach($m_texts as $key=>$value){
+				if(($position=mb_strpos ( $rep, $value))!==false){
+					$positions[$i]=$position;
+					$pos_keys[$i]=$key;
+					$i++;
+				}
+			}
+			if(count($positions)<3)
+				continue;
+			$size=$i;
+		
+			//@TODO Do we need to sort these things
+			//print_r($pos_keys);
+			//print_r($positions);
+			//exit;
+			//print_r($rep); 
+			 
+			
+			$positions[$size]=mb_strlen($rep);
+			$pos_keys[$size]='end';
+			$m_texts['end']='';
+			 
+			for($i=0;$i<$size;$i++){
+				$data[$pos_keys[$i]] = mb_substr( $rep,$positions[$i]+mb_strlen($m_texts[$pos_keys[$i]])+1, $positions[$i+1]-$positions[$i]-mb_strlen($m_texts[$pos_keys[$i]])-1);
+			}
+			//echo $data['timestr']."timetime \n";
+			$reg='/(\d{2,4}).*?(\d{1,2}).*?(\d{1,2}).*?(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/';//2015年3月27日(星期五) 下午3:00-4:30
+			preg_match($reg,$data['timestr'],$result);
+			
+			$data['length']=((int)$result[6]-(int)$result[4])*60+(int)$result[7]-(int)$result[5];
+			
+			if(strlen($result[1])==2)
+				$result[1]='20'.$result[1];
+			
+			if(mb_strpos ( $rep, "下午" ))
+				$result[4]=(int)$result[4]+12;
+			
+			$data['starttime'] = $result[1].'-'.$result[2].'-'.$result[3].' '.$result[4].':'.$result[5];
+			
+			unset($data['timestr']);
+			$this->report_model->add($data);
+			$id=$this->db->insert_id();
+			print_r($data);
+			 
+			$bbs= new BBS();
+			//sent to bbs
+		 
+			$href = $bbs->post ($data, $id, $board,'[固物学术报告]' );
+			
+			//update bbslink
+			//add href to database
+			 
+			exit;
+			//print_r($rep);
+			//exit;
+			
+		}
+		
+	} 
+	
 	
 	protected  function get_math(){
 		

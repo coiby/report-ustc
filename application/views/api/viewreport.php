@@ -3,7 +3,7 @@
 			<p>时间：<?php echo $report['starttime']?></p>
 			<p>地点：<?php echo $report['place']?></p>
 			<h4>报告人介绍</h4>
-			<p><?php echo $report['profile']?></p>
+			<p><?php echo nl2br($report['profile'])?></p>
 			<p></p>
 			<h4>报告摘要</h4>
-			<p><?php echo $report['content']?></p>
+			<p><?php echo nl2br($report['content'])?></p>

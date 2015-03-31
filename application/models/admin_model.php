@@ -63,6 +63,18 @@ class Admin_model extends CI_Model
 		return $rst->row_array();
 	}	
 
+	
+	/**
+	 * get the BBS board name by id
+	 * 
+	 */
+	
+	function getBBSByUid($uid){
+		$rst = $this->db->select('bbsboard')->where(array('id'=>$uid))->get($this->table_name);
+		$res = $rst->row_array();
+		return $res['bbsboard'];
+	}
+	
 	/**
 	 * get user by name
 	 *

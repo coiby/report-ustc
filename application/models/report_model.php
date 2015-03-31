@@ -71,7 +71,7 @@ class Report_model extends CI_Model
  	}
  
  	function latest($cid,$limit=4){
- 		$this->db->select('title');
+ 		$this->db->select('title,speaker');
  		$this->db->limit($limit);
  		$this->db->where("cid",$cid);
  		$this->db->order_by("starttime", "desc");
