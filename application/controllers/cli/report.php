@@ -14,6 +14,7 @@ class Report extends CI_Controller {
 			return;
 		}
 		$this->get_micro();
+		$this->ess_solid();
 		
 	}
 	
