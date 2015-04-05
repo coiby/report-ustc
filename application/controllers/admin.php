@@ -64,6 +64,7 @@ class Admin extends Common {
 		if(!$this->session->userdata('admin') ){
 			redirect('admin/index');
 		}
+		
 		$err="";
 		$speaker=$_POST['speaker'];
 		$title=$_POST['title'];
@@ -93,8 +94,6 @@ class Admin extends Common {
 		
 		$starttime = $date." ".$begin;// TODO need to be tested
 		
-	 
-		
 		$data = array (
 				'speaker' => $speaker,
 				'title' => $title,
@@ -112,34 +111,12 @@ class Admin extends Common {
 			if (! empty ( $bbsuser ) && ! empty ( $bbsuser )) {
 			}
 			$id = mysql_insert_id ();
-			$board = $this->admin_model->getBBSByUid ( $poster );
+			$board = $this->report_model->bbs_board ( $cid );
+			//$board='test';
 			if ($board != '') {
-				$bbsb = ""; // mailbody
-				// @TODO feature: 通知具体改变
-				$bbsb = "报告人：" . $speaker . "\n"; // mailbody
-				// $bbsb="报告人：".$row['speaker']."\n";
-				if (! empty ( $institution )) {
-					$bbsb = $bbsb . "单位：" . $institution . "\n";
-					// $bbsb="单位：".$row['institution']."\n";
-				}
-				// deal with date + time
-				/*
-				 * $dt=new DateTime($row['starttime']); $date= $date = $dt->format('m/d/Y'); $time = $dt->format('H:i');
-				 */
-				
-				$bbsb = $bbsb . "时间：" . $starttime . "-" . $end . "\n\n";
-				
-				if (! empty ( $profile ))
-					$bbsb = $bbsb . "报告人介绍\n" . $profile . "\n\n";
-				
-				if (! empty ( $content ))
-					$bbsb = $bbsb . "报告摘要\n" . $content;
-				$bbs= new BBS();
-				$href = $bbs->post ( $title, $bbsb, $id, $board );
-				//update bbslink
-				//add href to database
-				$query="update `report` set `bbslink`='".$href."' where id=".$id;
-				$result = mysql_query ( $query );
+			 
+				$href = $this->bbs->post ( $data, $id, $board );
+				 
 			}else{
 				$href='';
 			}
@@ -189,7 +166,7 @@ class Admin extends Common {
 		$content = $_POST ['content'];
 		$place = $_POST ['place'];
 		$poster = $this->session->userdata ( 'adminid' ); // get user from session
-		
+		$cid=$this->session->userdata ( 'cid' );
 		/*
 		 * $bbsuser=$_POST['bbsuser']; $bbspass=$_POST['bbspass'];
 		 */
@@ -223,32 +200,13 @@ class Admin extends Common {
 			$data['state']=2;//get state of report, if state=3(notices are already sent), set the state to 2
 		$where=array('id'=>$id);
 		if ($this->report_model->update( $data, $where )) {
-			$bbsb = ""; // mailbody
-			          // TODO feature: 通知具体改变
-			$bbsb = "报告人：" . $speaker . "\n"; // mailbody
-			                            // $bbsb="报告人：".$row['speaker']."\n";
-			if (! empty ( $institution )) {
-				$bbsb = $bbsb . "单位：" . $institution . "\n";
-				// $bbsb="单位：".$row['institution']."\n";
-			}
-			// deal with date + time
-			/*
-			 * $dt=new DateTime($row['starttime']); $date= $date = $dt->format('m/d/Y'); $time = $dt->format('H:i');
-			 */
-			
-			$bbsb = $bbsb . "时间：" . $starttime . "-" . $end . "\n\n";
-			
-			if (! empty ( $profile ))
-				$bbsb = $bbsb . "报告人介绍\n" . $profile . "\n\n";
-			
-			if (! empty ( $content ))
-				$bbsb = $bbsb . "报告摘要\n" . $content;
-			$subject = "[更新]" . $title;
+			 
 			 
 			$row = $this->report_model->fetch(array('id'=>$id));
-			$bbs= new BBS();
+			$board = $this->report_model->bbs_board ( $cid );
+			//$board='test';
 			 
-			$bbs->update( $subject, $bbsb, $row ['bbslink'], $id );
+			$this->bbs->update( $data, $row ['bbslink'],$board, $id );
 			
 			echo json_encode ( array (
 					'status' => 'success',

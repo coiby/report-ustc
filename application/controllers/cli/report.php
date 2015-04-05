@@ -81,7 +81,6 @@ class Report extends CI_Controller {
 					 
 					 
 					if (mb_strpos ( $ptext, $latest_speaker ) !== false) {
-						//echo "nonono\n";
 						return false;
 					}
 					//exit;
@@ -102,8 +101,8 @@ class Report extends CI_Controller {
 
 			
 			
-			$rep = str_replace(array("\n", "\r"), '',html_entity_decode ( $contents->plaintext));
-           
+			$rep = str_replace(array( "\r"), '',html_entity_decode ( $contents->plaintext));
+			$rep = rtrim($rep,"\n");
 			$rep = preg_replace('/^[(\xc2\xa0)|\s]+/', '',$rep);
 			$rep = str_replace(' ', '',$rep);
 			$rep = str_replace('单 位', '单位',$rep);
@@ -141,7 +140,7 @@ class Report extends CI_Controller {
 			$m_texts['end']='';
 			 
 			for($i=0;$i<$size;$i++){
-				$data[$pos_keys[$i]] = mb_substr( $rep,$positions[$i]+mb_strlen($m_texts[$pos_keys[$i]])+1, $positions[$i+1]-$positions[$i]-mb_strlen($m_texts[$pos_keys[$i]])-1);
+				$data[$pos_keys[$i]] = rtrim(mb_substr( $rep,$positions[$i]+mb_strlen($m_texts[$pos_keys[$i]])+1, $positions[$i+1]-$positions[$i]-mb_strlen($m_texts[$pos_keys[$i]])-1),"\n");
 			}
 			//echo $data['timestr']."timetime \n";
 			$reg='/(\d{2,4}).*?(\d{1,2}).*?(\d{1,2}).*?(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/';//2015年3月27日(星期五) 下午3:00-4:30
@@ -170,7 +169,6 @@ class Report extends CI_Controller {
 			//update bbslink
 			//add href to database
 			 
-			exit;
 			//print_r($rep);
 			//exit;
 			

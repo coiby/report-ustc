@@ -91,6 +91,7 @@ class Notice extends CI_Controller {
 		
 		if (! empty ( $report ['content'] ))
 			$mb = $mb . "<h2>报告摘要</h2>" . "<p>" . nl2br($report ['content']) . "</p>";
+		$mb .=  nl2br($this->config->item('promote_msg'));
 			/* $patterns = array (); */
 			// $patterns [0] = "/<p>([\w\W]*?)<\/p>/";
 			// $patterns [1] = "/<h2>([\w\W]*?)<\/h2>/";

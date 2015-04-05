@@ -4,10 +4,36 @@ if (! defined ( 'BASEPATH' ))
 	exit ( 'No direct script access allowed' );
 class BBS {
 	private $ci;
+	private $snoopy;
 	public function __construct() {
 		$this->ci = & get_instance ();
 		$this->ci->load->library ( 'simple_html_dom' );
 		$this->ci->load->library ( 'Snoopy' );
+		
+	}
+	
+	function login(){
+		//log in
+		$this->snoopy = new Snoopy ();
+		$this->snoopy->maxredirs = 0;
+		$this->snoopy->agent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1)";
+		// $this->snoopy->maxframes=3;
+		
+		$action = "http://bbs.ustc.edu.cn/cgi/bbslogin";
+		$bbsaccount = $this->ci->config->item ( 'bbs' );
+		$formvars ["id"] = $bbsaccount ['user'];
+		$formvars ["pw"] = $bbsaccount ['pw'];
+		$this->snoopy->submit ( $action, $formvars ); // login
+		
+		// save cookies
+		$res = iconv ( "gb2312", "UTF-8", $this->snoopy->results );
+			
+		preg_match_all ( "/cookie=\'(utm[^=]+)=([^\']+)\'/i", $res, $matches );
+		$this->snoopy->cookies [$matches [1] [0]] = $matches [2] [0];
+		$this->snoopy->cookies [$matches [1] [1]] = $matches [2] [1];
+		$this->snoopy->cookies [$matches [1] [2]] = $matches [2] [2];
+		//print_r($matches);
+		//exit;
 	}
 	
 	function bbs_body($report) {
@@ -33,27 +59,13 @@ class BBS {
 		
 		if (! empty ( $report ['content'] ))
 			$bbsb = $bbsb . "报告摘要\n" . $report ['content'];
+		$bbsb .= $bbsaccount = $this->ci->config->item('promote_msg');
 		return $bbsb;
 	}
 	function post( $report, $repid, $board,$title_prefix='') {
+		$this->login();
 		$date = date ( "DMj" );
-		$snoopy = new Snoopy ();
-		$snoopy->maxredirs = 0;
-		$snoopy->agent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1)";
-		// $snoopy->maxframes=3;
 		
-		$action = "http://bbs.ustc.edu.cn/cgi/bbslogin";
-		$bbsaccount = $this->ci->config->item ( 'bbs' );
-		$formvars ["id"] = $bbsaccount ['user'];
-		$formvars ["pw"] = $bbsaccount ['pw'];
-		$snoopy->submit ( $action, $formvars ); // login
-		                                        
-		// save cookies
-		$res = iconv ( "gb2312", "UTF-8", $snoopy->results );
-		preg_match_all ( "/cookie=\'(utm[^=]+)=([^\']+)\'/i", $res, $matches );
-		$snoopy->cookies [$matches [1] [0]] = $matches [2] [0];
-		$snoopy->cookies [$matches [1] [1]] = $matches [2] [1];
-		$snoopy->cookies [$matches [1] [2]] = $matches [2] [2];
 		// print_r(iconv("gb2312","UTF-8",$snoopy->results));
 		
 		/* $action1 = "http://bbs.ustc.edu.cn/cgi/bbstdoc?board=ESS"; */
@@ -78,11 +90,11 @@ class BBS {
 		$formdata ['author'] = "**";
 		$formdata ['threadid'] = "0";
 		$formdata ['useattach'] = "true";
-		$snoopy->submit ( $action, $formdata ); // 提交
+		$this->snoopy->submit ( $action, $formdata ); // 提交
 		                                        // find url
 		$action1 = 'http://bbs.ustc.edu.cn/cgi/bbstdoc?board=' . $board;
-		$snoopy->fetch ( $action1 );
-		$res = $snoopy->results;
+		$this->snoopy->fetch ( $action1 );
+		$res = $this->snoopy->results;
 		$html = new simple_html_dom ( iconv ( "gb2312", "UTF-8//IGNORE", $res ) );
 		
 		$date = date ( "DMj" );
@@ -107,53 +119,43 @@ class BBS {
 			}
 		}
 		// add href to database
-		$query = "update `window` set `bbslink`='" . $href . "' where id=" . $repid;
+		$query = "update `report` set `bbslink`='" . $href . "' where id=" . $repid;
 		$result = mysql_query ( $query );
 		
 		// log out
-		$logouturl = "http://bbs.ustc.edu.cn/cgi/bbslogout";
-		$snoopy->fetch ( $logouturl );
+		$this->logout();
 		//exit($href."aabbcc\n");
 		
 		return $href;
 	}
-	function update($subject, $content, $link, $repid) {
-		$snoopy = new Snoopy ();
-		$snoopy->maxredirs = 0;
-		$snoopy->agent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1)";
-		// $snoopy->maxframes=3;
-		
-		$action = "http://bbs.ustc.edu.cn/cgi/bbslogin";
-		$bbsaccount = $this->ci->config->item ( 'bbs' );
-		$formvars ["id"] = $bbsaccount ['user'];
-		$formvars ["pw"] = $bbsaccount ['pw'];
-		
-		$snoopy->submit ( $action, $formvars ); // login
-		                                        
-		// save cookies
-		$res = iconv ( "gb2312", "UTF-8", $snoopy->results );
-		preg_match_all ( "/cookie=\'(utm[^=]+)=([^\']+)\'/i", $res, $matches );
-		$snoopy->cookies [$matches [1] [0]] = $matches [2] [0];
-		$snoopy->cookies [$matches [1] [1]] = $matches [2] [1];
-		$snoopy->cookies [$matches [1] [2]] = $matches [2] [2];
+	function update($report, $link,$board, $repid) {
+		$this->login();
 		
 		$prefix = "http://bbs.ustc.edu.cn/cgi/";
 		$action = "http://bbs.ustc.edu.cn/cgi/bbsedit";
 		// $title = "test eng";
 		$formdata = array ();
-		$formdata ['title'] = iconv ( "utf-8", "gbk", $subject );
-		$formdata ['text'] = iconv ( "utf-8", "gbk", $content );
+		$formdata ['title'] = iconv ( "utf-8", "gbk", '[更新]'.$report['title'] );
+		$formdata ['text'] = iconv ( "utf-8", "gbk", $this->bbs_body($report) );
 		$formdata ['type'] = "1";
-		$formdata ['board'] = "test";
+		$formdata ['board'] = $board;
 		preg_match_all ( "/M.\d+.A/i", $link, $matches );
 		
 		$formdata ['file'] = $matches [0] [0];
-		
+	
 		$formdata ['useattach'] = "true";
-		$snoopy->submit ( $action, $formdata ); // 提交
+		$this->snoopy->submit ( $action, $formdata ); // 提交
 		                                        
 		// log out
+		$this->logout();
+	}
+	
+	function __destruct() {
+		$this->logout();
+	}
+	
+	function logout(){
 		$logouturl = "http://bbs.ustc.edu.cn/cgi/bbslogout";
-		$snoopy->fetch ( $logouturl );
+		$this->snoopy->fetch ( $logouturl );
 	}
 }

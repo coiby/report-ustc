@@ -2,7 +2,9 @@
 class Report_model extends CI_Model
 {
 	protected $table_name = 'report';
-
+    
+	protected $table_collec = 'collection';
+	
 	function __construct()
 	{
 		parent::__construct();
@@ -40,6 +42,15 @@ class Report_model extends CI_Model
 		 
 	}
 	
+	function bbs_board($cid){
+		
+		$this->db->select('board');
+		$this->db->where('id', $cid);
+		$this->db->from($this->table_collec);
+		$res= $this->db->get()->row_array();
+		return $res['board'];
+		
+	}
 	
 	function get_cids($thisweek,$condition)
 	{
