@@ -12,7 +12,10 @@ select {
 .highlight {
           background-color: #ffff99;
         }
-
+.outdated {
+          background-color: #F8F8FF;
+        }
+        
 </style>
 <script>
 $(function() {  
@@ -309,7 +312,7 @@ $(function() {
 		
 foreach ($reports as $report) { 
 ?>
-			<tr id="<?php echo $report['id']?>" <?php if(stripos ( $report['starttime'], $date ) !== false){ ?>   class="highlight" <?php } ?>>
+			<tr id="<?php echo $report['id']?>" <?php if(stripos ( $report['starttime'], $date ) !== false){ ?>   class="highlight" <?php }else if($report['starttime']< $date){ ?> class="outdated" <?php }?>>
 				<!-- <td class="cktd"><input type="checkbox" class="ckfile" value=""><span>状态</span></td> -->
 
 				<td><span><?php echo $report['title']?></span></td>
