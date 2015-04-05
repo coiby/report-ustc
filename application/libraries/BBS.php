@@ -9,12 +9,12 @@ class BBS {
 		$this->ci = & get_instance ();
 		$this->ci->load->library ( 'simple_html_dom' );
 		$this->ci->load->library ( 'Snoopy' );
-		
+		$this->snoopy = new Snoopy ();
 	}
 	
 	function login(){
 		//log in
-		$this->snoopy = new Snoopy ();
+		
 		$this->snoopy->maxredirs = 0;
 		$this->snoopy->agent = "Mozilla/5.0 (compatible; MSIE 6.0; Windows NT 5.1)";
 		// $this->snoopy->maxframes=3;
